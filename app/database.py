@@ -4,9 +4,23 @@ from sqlalchemy.orm import sessionmaker
 import time
 import mysql.connector
 from .config import settings
+import os
 
-SQLALCHEMY_DATABASE_URL = f"mysql+mysqlconnector://{settings.DATABASE_USERNAME}:{settings.DATABASE_PASSWORD}@{settings.DATABASE_HOST}:{settings.DATABASE_PORT}/{settings.DATABASE_NAME}"
+# SQLALCHEMY_DATABASE_URL = f"mysql+mysqlconnector://{settings.DATABASE_USERNAME}:{settings.DATABASE_PASSWORD}@{settings.DATABASE_HOST}:{settings.DATABASE_PORT}/{settings.DATABASE_NAME}"
+DATABASE_URL = os.getenv("DATABASE_URL")
 
+if DATABASE_URL:
+    # Railway environment
+    # Railway provides MySQL URL as: mysql://user:pass@host:port/db
+    # SQLAlchemy needs: mysql+mysqlconnector://user:pass@host:port/db
+    if DATABASE_URL.startswith("mysql://"):
+        DATABASE_URL = DATABASE_URL.replace("mysql://", "mysql+mysqlconnector://", 1)
+    SQLALCHEMY_DATABASE_URL = DATABASE_URL
+else:
+    # Local development - build from individual env vars
+    from .config import settings
+    SQLALCHEMY_DATABASE_URL = f"mysql+mysqlconnector://{settings.DATABASE_USERNAME}:{settings.DATABASE_PASSWORD}@{settings.DATABASE_HOST}:{settings.DATABASE_PORT}/{settings.DATABASE_NAME}"
+    
 engine = create_engine(
     SQLALCHEMY_DATABASE_URL
 )
