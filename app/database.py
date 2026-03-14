@@ -1,49 +1,38 @@
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
-import time
-import mysql.connector
-from .config import settings
 import os
+from .config import settings
 
-# SQLALCHEMY_DATABASE_URL = f"mysql+mysqlconnector://{settings.DATABASE_USERNAME}:{settings.DATABASE_PASSWORD}@{settings.DATABASE_HOST}:{settings.DATABASE_PORT}/{settings.DATABASE_NAME}"
+# 1. Try to get the full URL first (Railway's default)
 DATABASE_URL = os.getenv("MYSQL_URL")
 
 if DATABASE_URL:
-    # Railway environment
-    # Railway provides MySQL URL as: mysql://user:pass@host:port/db
-    # SQLAlchemy needs: mysql+mysqlconnector://user:pass@host:port/db
+    # Handle the driver prefix for SQLAlchemy
     if DATABASE_URL.startswith("mysql://"):
-        DATABASE_URL = DATABASE_URL.replace("mysql://", "mysql+mysqlconnector://", 1)
-    SQLALCHEMY_DATABASE_URL = DATABASE_URL
+        SQLALCHEMY_DATABASE_URL = DATABASE_URL.replace("mysql://", "mysql+mysqlconnector://", 1)
+    else:
+        SQLALCHEMY_DATABASE_URL = DATABASE_URL
 else:
-    # Local development - build from individual env vars
-    from .config import settings
-    SQLALCHEMY_DATABASE_URL = f"mysql+mysqlconnector://{settings.DATABASE_USERNAME}:{settings.DATABASE_PASSWORD}@{settings.DATABASE_HOST}:{settings.DATABASE_PORT}/{settings.DATABASE_NAME}"
+    # 2. Local development fallback
+    # Use .get() with a default '3306' to prevent the 'None' int conversion error
+    user = settings.DATABASE_USERNAME
+    password = settings.DATABASE_PASSWORD
+    host = settings.DATABASE_HOST
+    port = settings.DATABASE_PORT if settings.DATABASE_PORT else "3306"
+    db_name = settings.DATABASE_NAME
+    
+    SQLALCHEMY_DATABASE_URL = f"mysql+mysqlconnector://{user}:{password}@{host}:{port}/{db_name}"
 
-engine = create_engine(
-    SQLALCHEMY_DATABASE_URL
-)
+# 3. Create the engine
+engine = create_engine(SQLALCHEMY_DATABASE_URL)
+
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-
-Base= declarative_base()
+Base = declarative_base()
 
 def get_db():
-    db=SessionLocal()
+    db = SessionLocal()
     try:
         yield db
     finally:
         db.close()
-
-# try:
-#     conn=mysql.connector.connect(
-#         host="localhost",
-#         user="root",
-#         password="khizer",
-#         database="fastapi",
-#         port="3306"
-#     )
-#     print("Database is connected: ")
-# except Exception as e:
-#     print("Error: ",e)
-#     time.sleep(2)
