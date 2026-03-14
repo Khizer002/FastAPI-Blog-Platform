@@ -12,7 +12,7 @@ import os
 # access to the values within the .ini file in use.
 config = context.config
 # Check if running on Railway
-DATABASE_URL = os.getenv("DATABASE_URL")
+DATABASE_URL = os.getenv("MYSQL_URL")
 
 if DATABASE_URL:
     # Railway environment
