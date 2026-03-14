@@ -7,7 +7,7 @@ from .config import settings
 import os
 
 # SQLALCHEMY_DATABASE_URL = f"mysql+mysqlconnector://{settings.DATABASE_USERNAME}:{settings.DATABASE_PASSWORD}@{settings.DATABASE_HOST}:{settings.DATABASE_PORT}/{settings.DATABASE_NAME}"
-DATABASE_URL = os.getenv("DATABASE_URL")
+DATABASE_URL = os.getenv("MYSQL_URL")
 
 if DATABASE_URL:
     # Railway environment
@@ -20,7 +20,7 @@ else:
     # Local development - build from individual env vars
     from .config import settings
     SQLALCHEMY_DATABASE_URL = f"mysql+mysqlconnector://{settings.DATABASE_USERNAME}:{settings.DATABASE_PASSWORD}@{settings.DATABASE_HOST}:{settings.DATABASE_PORT}/{settings.DATABASE_NAME}"
-    
+
 engine = create_engine(
     SQLALCHEMY_DATABASE_URL
 )
