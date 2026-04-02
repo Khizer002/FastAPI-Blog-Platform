@@ -1,12 +1,31 @@
-from fastapi import FastAPI
+from fastapi import FastAPI,Request
 from .database import engine
-from . import models
 from .routers import blogs,users,auth,vote
 from fastapi.middleware.cors import CORSMiddleware
+import sentry_sdk
+from .logging_config import setup_logging
+from .config import settings
+from loguru import logger
+import time
 
 
+setup_logging()
+if settings.SENTRY_DSN:
+    sentry_sdk.init(dsn=settings.SENTRY_DSN, environment=settings.ENV, traces_sample_rate=1.0)
 # models.Base.metadata.create_all(bind=engine)
+
 app=FastAPI()
+
+@app.middleware("http")
+async def log_requests(request:Request,call_next):
+    logger.info(f"Incoming: {request.method} {request.url.path}")
+    start_time=time.perf_counter()
+    response=await call_next(request)
+    end_time=time.perf_counter()-start_time
+
+    logger.success(f"Completed: {request.method} {request.url.path} | Status: {response.status_code} | {end_time:.4f}s")
+    return response
+
 origins = [
     # "https://www.youtube.com",
     # "https://www.google.com"
@@ -28,5 +47,5 @@ app.include_router(vote.router)
 
 @app.get("/")
 def home():
+    logger.info("Hey this is starting route: ")
     return {"data":"Hello World"}
-
