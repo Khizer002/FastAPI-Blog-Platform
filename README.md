@@ -42,6 +42,12 @@
 <li><code>DELETE /blogs/{id}</code> - Delete a blog post</li>
 </ul>
 
+<h3>Users</h3>
+<ul>
+<li><code>POST /users</code> - Create a new user (supports async pagination & search)</li>
+<li><code>GET /users/{id}</code> - Retrieve a specific user details</li>
+</ul>
+
 <h3>Votes</h3>
 <ul>
 <li><code>POST /vote</code> - Like or unlike a blog post (Async execution)</li>
