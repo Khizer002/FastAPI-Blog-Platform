@@ -2,13 +2,13 @@ from fastapi import Query, Path, Depends
 from pydantic import Field
 from typing import Optional, Annotated
 from .database import get_db
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.security import OAuth2PasswordBearer
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
-DBsession = Annotated[Session, Depends(get_db)]
+DBsession = Annotated[AsyncSession, Depends(get_db)]
 RequestForm = Annotated[OAuth2PasswordRequestForm, Depends()]
 TokenVal = Annotated[str, Depends(oauth2_scheme)]
 

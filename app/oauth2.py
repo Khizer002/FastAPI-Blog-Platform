@@ -6,6 +6,7 @@ from . import dependencies as deps
 from .config import settings
 from typing import Annotated
 from loguru import logger
+from sqlalchemy import select
 
 secret_key = settings.SECRET_KEY
 algorithm = settings.ALGORITHM
@@ -35,7 +36,7 @@ def verify_token(token: str, credentials_exception):
         logger.warning("Unknown person tried to access")
         raise credentials_exception
     
-def get_current_user(token: deps.TokenVal, db: deps.DBsession):
+async def get_current_user(token: deps.TokenVal, db: deps.DBsession):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED, 
         detail="Could not validate credentials",
@@ -43,7 +44,8 @@ def get_current_user(token: deps.TokenVal, db: deps.DBsession):
     )
     token_data = verify_token(token, credentials_exception)
     logger.debug(f"Authenticating User ID: {token_data}")
-    user = db.query(models.User).filter(models.User.id == int(token_data)).first()
+    query = await db.execute(select(models.User).where(models.User.id == int(token_data)))
+    user:models.User=query.scalars().first()
     if not user:
         logger.warning(f"Auth Failed: User ID {token_data} not found in database.")
         raise credentials_exception

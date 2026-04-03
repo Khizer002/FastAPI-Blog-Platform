@@ -7,6 +7,7 @@ from .logging_config import setup_logging
 from .config import settings
 from loguru import logger
 import time
+from contextlib import asynccontextmanager
 
 
 setup_logging()
@@ -14,7 +15,14 @@ if settings.SENTRY_DSN:
     sentry_sdk.init(dsn=settings.SENTRY_DSN, environment=settings.ENV, traces_sample_rate=1.0)
 # models.Base.metadata.create_all(bind=engine)
 
-app=FastAPI()
+@asynccontextmanager
+async def lifespan(app:FastAPI):
+    logger.info("Starting up: Initializing database connection pool")
+    yield
+    logger.info("Shutting down: Database connection pool")
+    await engine.dispose
+
+app=FastAPI(title="Blog-Platform", lifespan=lifespan)
 
 @app.middleware("http")
 async def log_requests(request:Request,call_next):

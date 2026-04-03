@@ -2,17 +2,19 @@ from .. import schemas, utils, models, oauth2
 from fastapi import HTTPException, status, APIRouter
 from .. import dependencies as deps
 from loguru import logger
+from sqlalchemy import select
 
 router = APIRouter(
     tags=["Authentication"]
 )
 
 @router.post("/login", response_model=schemas.Token)
-def login_user(user_credentials: deps.RequestForm, db: deps.DBsession):
+async def login_user(user_credentials: deps.RequestForm, db: deps.DBsession):
     logger.debug(f"User_Credentials: {user_credentials.username}")
-    user = db.query(models.User).filter(
+    query = await db.execute(select(models.User).filter(
         models.User.email == user_credentials.username
-    ).first()
+    ))
+    user = query.scalars().first()
 
     if not user:
         logger.warning(f"User {user_credentials.username} has enetered wrong credentials")

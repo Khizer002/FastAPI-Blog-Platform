@@ -39,3 +39,11 @@ def setup_logging():
         enqueue=True,
         format="{time:YYYY-MM-DD HH:mm:ss} | {level: <8} | {name}:{function}:{line} - {message}"
     )
+
+    # This down code is for uvicorn logs
+    # for name in logging.root.manager.loggerDict:
+    #     if name.startswith("uvicorn"):
+    #         uvicorn_logger=logging.getLogger(name)
+    #         uvicorn_logger.handlers=[]
+    #         uvicorn_logger.addHandler([InterceptHandler])
+    #         uvicorn_logger.setLevel(level="INFO")
