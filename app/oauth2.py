@@ -11,13 +11,24 @@ from sqlalchemy import select
 secret_key = settings.SECRET_KEY
 algorithm = settings.ALGORITHM
 access_time = settings.ACCESS_TOKEN_EXPIRE_MINUTES
+refresh_secret_key=settings.REFRESH_SECRET_KEY
+refresh_time=settings.REFRESH_TOKEN_EXPIRE_DAYS
 
 def create_token(data: dict):
     logger.info(f"Payload: {data.get("sub")}")
     to_encode = data.copy()
     expire = datetime.utcnow() + timedelta(minutes=access_time)
-    to_encode.update({"exp": expire})
+    to_encode.update({"exp": expire,"type":"access"})
     token = jwt.encode(to_encode, secret_key, algorithm=algorithm)
+    logger.success(f"Token created successfully for {data.get("sub")}")
+    return token
+
+def create_refresh_token(data: dict):
+    logger.info(f"Payload: {data.get("sub")}")
+    to_encode = data.copy()
+    expire = datetime.utcnow() + timedelta(days=refresh_time)
+    to_encode.update({"exp": expire,"type":"refresh"})
+    token = jwt.encode(to_encode, refresh_secret_key, algorithm=algorithm)
     logger.success(f"Token created successfully for {data.get("sub")}")
     return token
 
@@ -25,8 +36,12 @@ def verify_token(token: str, credentials_exception):
     try:
         payload = jwt.decode(token, secret_key, algorithms=[algorithm])
         id: str = payload.get("sub")
+        token_type=payload.get("type")
         if not id:
             logger.warning("Missing 'sub' field")
+            raise credentials_exception
+        if token_type!="access":
+            logger.error(f"Wrong token type used : {token_type}")
             raise credentials_exception
         return id
     except (jwt.InvalidTokenError):
@@ -34,6 +49,30 @@ def verify_token(token: str, credentials_exception):
         raise credentials_exception
     except(jwt.ExpiredSignatureError):
         logger.warning("Unknown person tried to access")
+        raise credentials_exception
+
+def verify_refresh_token(token: str, credentials_exception):
+    try:
+        payload = jwt.decode(token, refresh_secret_key, algorithms=[algorithm])
+        
+        user_id: str = payload.get("sub")
+        token_type: str = payload.get("type") 
+
+        if not user_id:
+            logger.warning("Token payload missing 'sub'")
+            raise credentials_exception
+        
+        if token_type != "refresh":
+            logger.error(f"Wrong token type used: {token_type}")
+            raise credentials_exception
+            
+        return user_id
+
+    except jwt.ExpiredSignatureError:
+        logger.warning("Refresh token has expired")
+        raise credentials_exception
+    except jwt.JWTError: 
+        logger.info("Invalid token signature or format")
         raise credentials_exception
     
 async def get_current_user(token: deps.TokenVal, db: deps.DBsession):

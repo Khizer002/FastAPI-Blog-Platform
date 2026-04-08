@@ -1,78 +1,57 @@
 <h1>FastAPI Blog Platform</h1>
 
-<p>A RESTful API backend for a blog platform built with FastAPI and MySQL, featuring user authentication, CRUD operations, and a voting system. This project follows modern production standards, including <strong>Asynchronous programming</strong>, structured logging, and performance monitoring.</p>
+<p>Hey! This is a solid REST API for a blog site I built using FastAPI and MySQL. It's got everything: users, posts, and a voting system. I really focused on making this "production-ready," so it's fully <strong>Async</strong>, uses structured logging, and keeps an eye on performance with Sentry monitoring.</p>
 
-<h2>Overview</h2>
-<p>This project is a fully functional blog API that allows users to register, authenticate, create blog posts, and interact with content through a voting system. It demonstrates modern backend development practices with Python, utilizing <strong>Async/Await</strong> for high-performance database interactions, and is deployed on Railway for production use.</p>
+<h2>What’s inside?</h2>
+<p>You can sign up, log in, write blogs, and like/unlike posts. It’s built to be fast, using <strong>Async/Await</strong> so the database doesn't get choked up when multiple people are using it. It's currently live on Railway!</p>
 
-<h2>Key Features</h2>
+<h2>Cool Tech Features</h2>
 <ul>
-<li><strong>Asynchronous Architecture:</strong> Fully migrated to <code>Async/Await</code> using <code>SQLAlchemy 2.0</code> and <code>aiomysql</code> to handle concurrent requests efficiently without blocking the event loop.</li>
-<li><strong>Structured Logging:</strong> Implemented <code>Loguru</code> for high-performance, asynchronous logging. Configured with separate sinks for a detailed <code>DEBUG</code> terminal and a clean, <code>SUCCESS</code>-level <code>app.log</code> for production audits.</li>
-<li><strong>Error Monitoring:</strong> Integrated <strong>Sentry</strong> for real-time error tracking and performance monitoring, ensuring zero-downtime visibility.</li>
-<li><strong>Modern Dependency Injection:</strong> Uses <code>Annotated</code> types for cleaner, more readable code in routers and dependencies, paired with <code>async_sessionmaker</code> for session management.</li>
-<li><strong>High-Performance Tooling:</strong> Managed with <code>uv</code> for lightning-fast environment setup and dependency resolution.</li>
-<li><strong>Security First:</strong> JWT authentication with safe <code>.get()</code> payload handling and Bcrypt password hashing.</li>
-<li><strong>Advanced CRUD:</strong> Supports pagination, search filters, and relational data (Post likes/votes) using <code>selectinload</code> for optimized async loading.</li>
+<li><strong>Better Security (JWT Refresh Tokens):</strong> I upgraded the login system. Now, instead of just one token, you get a pair. When your short-term access dies, the app automatically uses a "Refresh Token" to keep you logged in without making you type your password again.</li>
+<li><strong>Rate Limiting (No Spam):</strong> Added a bouncer to the API. If someone tries to spam the login or refresh routes, the app slows them down so the server stays safe.</li>
+<li><strong>Super Fast (Async Everything):</strong> Everything from database calls (SQLAlchemy 2.0 + aiomysql) to logging is asynchronous.</li>
+<li><strong>Smart Logging:</strong> Used <code>Loguru</code>. It prints detailed debug stuff in my terminal but saves clean, easy-to-read success logs in a file for later.</li>
+<li><strong>Error Tracking:</strong> Integrated <strong>Sentry</strong>. If something breaks, I get an alert immediately so I can fix it.</li>
+<li><strong>Package Management:</strong> Swapped standard pip for <code>uv</code>. It installs dependencies almost instantly.</li>
 </ul>
 
-<h2>Technology Stack</h2>
-<p><strong>Backend Framework:</strong> FastAPI (Async)</p>
-<p><strong>Package Manager:</strong> uv (Replacing standard pip)</p>
-<p><strong>Logging:</strong> Loguru</p>
+<h2>The Tech Stack</h2>
+<p><strong>Framework:</strong> FastAPI (Async)</p>
+<p><strong>Package Manager:</strong> uv (Super fast!)</p>
+<p><strong>Database:</strong> MySQL 8.0 with SQLAlchemy 2.0 (Async mode)</p>
 <p><strong>Monitoring:</strong> Sentry SDK</p>
-<p><strong>Database:</strong> MySQL 8.0</p>
-<p><strong>ORM:</strong> SQLAlchemy 2.0 (Async Mode)</p>
-<p><strong>Database Driver:</strong> aiomysql</p>
-<p><strong>Authentication:</strong> JWT (PyJWT)</p>
+<p><strong>Security:</strong> JWT with Refresh Token Rotation & Argon2 hashing</p>
 
 <h2>API Endpoints</h2>
-<h3>Authentication</h3>
+<h3>Auth & Users</h3>
 <ul>
-<li><code>POST /login</code> - Authenticate and receive access token</li>
-<li><code>POST /users</code> - Register a new account</li>
+<li><code>POST /login</code> - Get your tokens</li>
+<li><code>POST /refresh</code> - Use your refresh token to stay logged in</li>
+<li><code>POST /users</code> - Create an account</li>
+<li><code>GET /users/{id}</code> - Check user details</li>
 </ul>
 
-<h3>Blog Posts</h3>
+<h3>The Fun Stuff</h3>
 <ul>
-<li><code>GET /blogs</code> - Retrieve all blog posts (supports async pagination & search)</li>
-<li><code>GET /blogs/{id}</code> - Retrieve a specific blog post</li>
-<li><code>POST /blogs</code> - Create a new blog post</li>
-<li><code>PUT /blogs/{id}</code> - Update a blog post</li>
-<li><code>DELETE /blogs/{id}</code> - Delete a blog post</li>
+<li><code>GET /blogs</code> - See all posts (with search and pagination)</li>
+<li><code>POST /blogs</code> - Write a new post</li>
+<li><code>PUT /blogs/{id}</code> - Edit your post</li>
+<li><code>DELETE /blogs/{id}</code> - Delete a post</li>
+<li><code>POST /vote</code> - Like or unlike a blog</li>
 </ul>
 
-<h3>Users</h3>
-<ul>
-<li><code>POST /users</code> - Create a new user (supports async pagination & search)</li>
-<li><code>GET /users/{id}</code> - Retrieve a specific user details</li>
-</ul>
-
-<h3>Votes</h3>
-<ul>
-<li><code>POST /vote</code> - Like or unlike a blog post (Async execution)</li>
-</ul>
-
-<h2>Installation and Setup</h2>
-<h3>Prerequisites</h3>
-<ul>
-<li>Python 3.12 or higher</li>
-<li>MySQL 8.0 or higher</li>
-<li>uv (Install via: <code>pip install uv</code>)</li>
-</ul>
-
-<h3>Local Development</h3>
-<pre><code>git clone https://github.com/Khizer002/FastAPI-Blog-Platform.git
+<h2>How to run it locally</h2>
+<pre><code># Clone it
+git clone https://github.com/Khizer002/FastAPI-Blog-Platform.git
 cd FastAPI-Blog-Platform
 
-Sync environment using uv (installs aiomysql and sqlalchemy 2.0)
+# Sync your environment (this is fast thanks to uv)
 uv sync
 
-Setup .env file with DATABASE_URL (use mysql+aiomysql://) and SENTRY_DSN
-Then run migrations:
+# Set up your .env with your DB info and run migrations
 uv run alembic upgrade head
 
-Start the async server
+# Fire it up!
 uv run uvicorn app.main1:app --reload
 </code></pre>
 

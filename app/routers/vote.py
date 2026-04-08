@@ -1,8 +1,9 @@
-from fastapi import APIRouter, status, HTTPException
+from fastapi import APIRouter, status, HTTPException,Request
 from .. import models, oauth2, schemas
 from .. import dependencies as deps
 from loguru import logger
 from sqlalchemy import select,delete
+from ..main1 import limiter
 
 router = APIRouter(
     prefix="/vote",
@@ -10,7 +11,8 @@ router = APIRouter(
 )
 
 @router.post("/", status_code=status.HTTP_201_CREATED)
-async def like_blog(info: schemas.AddVote, current_user: oauth2.CurrentUser, db: deps.DBsession):
+@limiter.limit("40/minute")
+async def like_blog(request:Request,info: schemas.AddVote, current_user: oauth2.CurrentUser, db: deps.DBsession):
     logger.info(f"User id: {current_user.id}")
     query_blog = await db.execute(select(models.Blog).where(models.Blog.id == info.post_id))
     blog:models.Blog=query_blog.scalars().first()

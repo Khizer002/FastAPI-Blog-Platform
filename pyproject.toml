@@ -39,6 +39,7 @@ dependencies = [
     "python-multipart==0.0.21",
     "pyyaml==6.0.2",
     "sentry-sdk>=2.57.0",
+    "slowapi>=0.1.9",
     "sqlalchemy[asyncio]>=2.0.0",
     "starlette==0.50.0",
     "typing-extensions==4.15.0",

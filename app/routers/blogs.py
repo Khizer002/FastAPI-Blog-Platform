@@ -1,11 +1,12 @@
 from .. import schemas, models, oauth2
-from fastapi import status, HTTPException, APIRouter, Response
+from fastapi import status, HTTPException, APIRouter, Response,Request
 from typing import List
 from sqlalchemy import func
 from .. import dependencies as deps
 from loguru import logger
-from sqlalchemy import select,delete,update
+from sqlalchemy import select,update
 from sqlalchemy.orm import selectinload
+from ..main1 import limiter
 
 router = APIRouter(
     prefix="/blogs",
@@ -13,7 +14,8 @@ router = APIRouter(
 )
 
 @router.get("/", response_model=List[schemas.BlogOut])
-async def blogs(db: deps.DBsession, current_user: oauth2.CurrentUser, limit: deps.Limit = 10, skip: deps.Skip = 0, search: deps.Search = None):
+@limiter.limit("100/minute")
+async def blogs(request:Request,db: deps.DBsession, current_user: oauth2.CurrentUser, limit: deps.Limit = 10, skip: deps.Skip = 0, search: deps.Search = None):
     logger.info(f"User {current_user.id} fetching blogs | Limit: {limit} | Skip: {skip}")
     # cursor=conn.cursor(dictionary=True)
     # cursor.execute("select * from blogs;")
@@ -35,7 +37,8 @@ async def blogs(db: deps.DBsession, current_user: oauth2.CurrentUser, limit: dep
     return blogs_with_likes
 
 @router.post("/", status_code=status.HTTP_201_CREATED, response_model=schemas.Response_blogs)
-async def createBlog(payload: schemas.Payload, db: deps.DBsession, current_user: oauth2.CurrentUser):
+@limiter.limit("2/minute")
+async def createBlog(request:Request,payload: schemas.Payload, db: deps.DBsession, current_user: oauth2.CurrentUser):
     logger.info(f"User id: {current_user.id}")
     # cursor=conn.cursor(dictionary=True)
     # cursor.execute("insert into blogs (title,content) values(%s,%s) ",(payload.title,payload.content,))
@@ -52,7 +55,8 @@ async def createBlog(payload: schemas.Payload, db: deps.DBsession, current_user:
     return new_blog
 
 @router.get("/{id}", response_model=schemas.BlogOut)
-async def get_blog(id: deps.BlogID, db: deps.DBsession, current_user: oauth2.CurrentUser):
+@limiter.limit("40/minute")
+async def get_blog(request:Request,id: deps.BlogID, db: deps.DBsession, current_user: oauth2.CurrentUser):
     logger.info(f"User id: {current_user.id}")
     # cursor=conn.cursor(dictionary=True)
     # cursor.execute("select * from blogs where id=%s",(str(id),))
@@ -67,7 +71,8 @@ async def get_blog(id: deps.BlogID, db: deps.DBsession, current_user: oauth2.Cur
     return blog
 
 @router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_blog(id: deps.BlogID, db: deps.DBsession, current_user: oauth2.CurrentUser):
+@limiter.limit("5/minute")
+async def delete_blog(request:Request,id: deps.BlogID, db: deps.DBsession, current_user: oauth2.CurrentUser):
     logger.info(f"User id: {current_user.id}")
     # cursor=conn.cursor(dictionary=True)
     # cursor.execute("delete from blogs where id=%s",(id,))
@@ -87,7 +92,8 @@ async def delete_blog(id: deps.BlogID, db: deps.DBsession, current_user: oauth2.
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 @router.put("/{id}", response_model=schemas.Response_blogs)
-async def update_blog(id: deps.BlogID, blog: schemas.update_blog_data, db: deps.DBsession, current_user: oauth2.CurrentUser):
+@limiter.limit("5/minute")
+async def update_blog(request:Request,id: deps.BlogID, blog: schemas.update_blog_data, db: deps.DBsession, current_user: oauth2.CurrentUser):
     logger.info(f"User id: {current_user.id}")
     # cursor=conn.cursor(dictionary=True)
     # cursor.execute("update blogs set title=%s,content=%s,published=%s where id=%s",(blog.title,blog.content,blog.published,str(id),))
@@ -117,7 +123,8 @@ async def update_blog(id: deps.BlogID, blog: schemas.update_blog_data, db: deps.
     return updated_row
 
 @router.patch("/{id}", response_model=schemas.Response_blogs)
-async def update_blogViaPatch(id: deps.BlogID, blog: schemas.updateBlog, db: deps.DBsession, current_user: oauth2.CurrentUser):
+@limiter.limit("5/minute")
+async def update_blogViaPatch(request:Request,id: deps.BlogID, blog: schemas.updateBlog, db: deps.DBsession, current_user: oauth2.CurrentUser):
     logger.info(f"User id: {current_user.id}")
     # cursor=conn.cursor(dictionary=True)
     # updated_data=blog.dict(exclude_unset=True)

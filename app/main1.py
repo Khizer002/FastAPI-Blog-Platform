@@ -1,6 +1,5 @@
 from fastapi import FastAPI,Request
 from .database import engine
-from .routers import blogs,users,auth,vote
 from fastapi.middleware.cors import CORSMiddleware
 import sentry_sdk
 from .logging_config import setup_logging
@@ -8,6 +7,10 @@ from .config import settings
 from loguru import logger
 import time
 from contextlib import asynccontextmanager
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
+from slowapi.middleware import SlowAPIMiddleware
 
 
 setup_logging()
@@ -22,7 +25,10 @@ async def lifespan(app:FastAPI):
     logger.info("Shutting down: Database connection pool")
     await engine.dispose
 
+limiter=Limiter(key_func=get_remote_address,default_limits=["50/minute"])
 app=FastAPI(title="Blog-Platform", lifespan=lifespan)
+app.state.limiter=limiter
+app.add_exception_handler(RateLimitExceeded,_rate_limit_exceeded_handler)
 
 @app.middleware("http")
 async def log_requests(request:Request,call_next):
@@ -33,6 +39,8 @@ async def log_requests(request:Request,call_next):
 
     logger.success(f"Completed: {request.method} {request.url.path} | Status: {response.status_code} | {end_time:.4f}s")
     return response
+
+app.add_middleware(SlowAPIMiddleware)
 
 origins = [
     # "https://www.youtube.com",
@@ -47,6 +55,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+from .routers import blogs,users,auth,vote
 app.include_router(users.router)
 app.include_router(blogs.router)
 app.include_router(auth.router)

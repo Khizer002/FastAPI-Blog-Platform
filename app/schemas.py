@@ -63,10 +63,14 @@ class Login_User(BaseModel):
 
 class Token(BaseModel):
     access_token: str
+    refresh_token: str
     token_type: str
 
     class Config:
         from_attributes = True
+
+class Refresh_token_schema(BaseModel):
+    refresh_token:str
 
 class Vote(BaseModel):
     post_id: deps.BlogID
