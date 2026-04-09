@@ -54,7 +54,6 @@ def verify_token(token: str, credentials_exception):
 def verify_refresh_token(token: str, credentials_exception):
     try:
         payload = jwt.decode(token, refresh_secret_key, algorithms=[algorithm])
-        
         user_id: str = payload.get("sub")
         token_type: str = payload.get("type") 
 

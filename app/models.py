@@ -26,3 +26,11 @@ class Vote(Base):
     __tablename__="votes"
     post_id=Column(Integer,ForeignKey("blogs.id",ondelete="CASCADE"),primary_key=True)
     user_id=Column(Integer,ForeignKey("users.id",ondelete="CASCADE"),primary_key=True)
+
+class RefreshToken(Base):
+    __tablename__="refresh_tokens"
+    id=Column(Integer,primary_key=True)
+    user_id=Column(Integer,ForeignKey("users.id",ondelete="CASCADE"),nullable=False)
+    token=Column(VARCHAR(255),unique=True,nullable=False)
+    is_used=Column(Boolean,nullable=False,server_default="0")
+    created_At=Column(TIMESTAMP,nullable=False,server_default=func.now())
