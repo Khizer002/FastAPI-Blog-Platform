@@ -43,8 +43,6 @@ async def log_requests(request:Request,call_next):
 app.add_middleware(SlowAPIMiddleware)
 
 origins = [
-    # "https://www.youtube.com",
-    # "https://www.google.com"
     "*"
 ]
 app.add_middleware(
