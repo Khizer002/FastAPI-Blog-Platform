@@ -72,7 +72,7 @@ async def profile_photo(request:Request, current_user:oauth2.CurrentUser, db:dep
     
     user.profile_pic=img_url
     await db.commit()
-    await db.refresh(user)
+    await db.refresh(user) #By this the user variable be always be updated
 
     return {"message": "Profile picture updated", "url": img_url}
     
