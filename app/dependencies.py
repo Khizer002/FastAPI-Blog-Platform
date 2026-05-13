@@ -1,4 +1,4 @@
-from fastapi import Query, Path, Depends
+from fastapi import Query, Path, Depends,UploadFile,File
 from pydantic import Field
 from typing import Optional, Annotated
 from .database import get_db
@@ -22,3 +22,4 @@ Search = Annotated[Optional[str], Query(description="Search by title", min_lengt
 DirID = Annotated[int, Field(description="whether blog is liked or not", ge=0, le=1)]
 FullName = Annotated[str, Field(pattern=r"^[a-zA-Z]+\s+[a-zA-Z]+$", description="Firstname and Lastname")]
 PASSWORD = Annotated[str, Field(min_length=8, description="Set password with at least 8 characters")]
+file=Annotated[UploadFile,File(description="File to upload pfp")]

@@ -14,6 +14,7 @@ class Settings(BaseSettings):
     SENTRY_DSN:str=None
     REFRESH_SECRET_KEY:str
     REFRESH_TOKEN_EXPIRE_DAYS:int
+    MAX_FILE_UPLOAD_SIZE:int
 
     class Config:
         env_file="dotenv"

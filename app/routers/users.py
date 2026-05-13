@@ -1,15 +1,30 @@
-from .. import schemas, models
-from fastapi import status, HTTPException, APIRouter,Request
+from .. import schemas, models,oauth2
+from fastapi import status, HTTPException, APIRouter,Request,UploadFile,Depends
 from ..utils import pass_hashing
 from .. import dependencies as deps
 from loguru import logger
 from sqlalchemy import select
 from ..main1 import limiter
+from pathlib import Path
+from ..config import settings
+from uuid import uuid4
+import shutil
 
 router = APIRouter(
     prefix="/users",
     tags=["User"]
 )
+
+Upload_path=Path("static/uploads")
+Upload_path.mkdir(parents=True,exist_ok=True)
+
+MAX_SIZE=settings.MAX_FILE_UPLOAD_SIZE
+
+def checkSize(file:deps.file):
+    if file.size>MAX_SIZE:
+        raise HTTPException(status_code=status.HTTP_413_CONTENT_TOO_LARGE,detail=f"File is too large. Max allowed={MAX_SIZE}")
+    return file
+
 @router.post("/", status_code=status.HTTP_201_CREATED, response_model=schemas.User_Response)
 @limiter.limit("2/hour")
 async def create_user(request:Request,user: schemas.AddUser, db: deps.DBsession):
@@ -39,3 +54,25 @@ async def get_users(request:Request,id: deps.BlogID, db: deps.DBsession):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not Found")
     logger.info(f"User found: {user.fullName} and id: {user.id}")
     return user
+
+@router.patch("/upload-pfp",status_code=status.HTTP_202_ACCEPTED)
+@limiter.limit("2/hour")
+async def profile_photo(request:Request, current_user:oauth2.CurrentUser, db:deps.DBsession, file:UploadFile=Depends(checkSize)):
+    extension=Path(file.filename).suffix
+    unique_name=f"{uuid4()}{extension}"
+    file_path=Upload_path / unique_name 
+    with open(file_path,"wb") as buffer:
+        shutil.copyfileobj(file.file,buffer)
+
+    img_url=f"/static/uploads/{unique_name}"
+    query=await db.execute(select(models.User).where(models.User.id==current_user.id))
+    user=query.scalars().first()
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="Not Found")
+    
+    user.profile_pic=img_url
+    await db.commit()
+    await db.refresh(user)
+
+    return {"message": "Profile picture updated", "url": img_url}
+    

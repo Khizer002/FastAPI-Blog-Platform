@@ -21,6 +21,7 @@ class User(Base):
     email=Column(VARCHAR(100), nullable=False, unique=True)
     password=Column(VARCHAR(200), nullable=False)
     created_At=Column(TIMESTAMP, nullable=False, server_default=func.now())
+    profile_pic=Column(VARCHAR(200),nullable=True)
 
 class Vote(Base):
     __tablename__="votes"
