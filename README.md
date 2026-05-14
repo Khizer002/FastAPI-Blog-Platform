@@ -1,6 +1,6 @@
 <h1>FastAPI Blog Platform</h1>
 
-<p>Hey! This is a solid REST API for a blog site I built using FastAPI and MySQL. It's got everything: users, posts, and a voting system. I really focused on making this "production-ready," so it's fully <strong>Async</strong>, uses structured logging, and keeps an eye on performance with Sentry monitoring.</p>
+<p>Hey! This is a solid REST API for a blog site I built using FastAPI and MySQL. It's got everything: users, posts, and a voting system. I really focused on making this "production-ready," so it's fully <strong>Async</strong>, uses structured logging, validating images for more security, and keeps an eye on performance with Sentry monitoring.</p>
 
 <h2>What’s inside?</h2>
 <p>You can sign up, log in, uploading a profile photo ,write blogs, and like/unlike posts. It’s built to be fast, using <strong>Async/Await</strong> so the database doesn't get choked up when multiple people are using it. It's currently live on Railway!</p>
@@ -20,7 +20,7 @@
 <p><strong>Package Manager:</strong> uv (Super fast!)</p>
 <p><strong>Database:</strong> MySQL 8.0 with SQLAlchemy 2.0 (Async mode)</p>
 <p><strong>Monitoring:</strong> Sentry SDK</p>
-<p><strong>Security:</strong> JWT with Refresh Token Rotation & Argon2 hashing</p>
+<p><strong>Security:</strong> JWT with Refresh Token Rotation & Argon2 hashing, Pillow for image validation</p>
 
 <h2>API Endpoints</h2>
 <h3>Auth & Users</h3>
