@@ -78,6 +78,11 @@ async def profile_photo(request:Request, current_user:oauth2.CurrentUser, db:dep
     if not user:
         logger.warning("User not found, might be deleted or banned")
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="Not Found")
+    if user.profile_pic and "uploads" not in user.profile_pic:
+        old_path = Path(user.profile_pic.strip("/")) 
+        if old_path.exists():
+            old_path.unlink() # Delete from disk
+            logger.info(f"Cleanup: Old image {old_path} deleted")
     
     user.profile_pic=img_url
     await db.commit()
