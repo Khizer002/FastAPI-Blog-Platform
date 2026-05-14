@@ -3,7 +3,7 @@
 <p>Hey! This is a solid REST API for a blog site I built using FastAPI and MySQL. It's got everything: users, posts, and a voting system. I really focused on making this "production-ready," so it's fully <strong>Async</strong>, uses structured logging, and keeps an eye on performance with Sentry monitoring.</p>
 
 <h2>What’s inside?</h2>
-<p>You can sign up, log in, write blogs, and like/unlike posts. It’s built to be fast, using <strong>Async/Await</strong> so the database doesn't get choked up when multiple people are using it. It's currently live on Railway!</p>
+<p>You can sign up, log in, uploading a profile photo ,write blogs, and like/unlike posts. It’s built to be fast, using <strong>Async/Await</strong> so the database doesn't get choked up when multiple people are using it. It's currently live on Railway!</p>
 
 <h2>Cool Tech Features</h2>
 <ul>
@@ -38,6 +38,7 @@
 <li><code>PUT /blogs/{id}</code> - Edit your post</li>
 <li><code>DELETE /blogs/{id}</code> - Delete a post</li>
 <li><code>POST /vote</code> - Like or unlike a blog</li>
+<li><code>PATCH /upload-pfp</code> - Upload a profile photo</li>
 </ul>
 
 <h2>How to run it locally</h2>
@@ -65,6 +66,8 @@ uv run uvicorn app.main1:app --reload
 │   ├── oauth2.py         # Async JWT logic & Auth dependencies
 │   └── config.py         # Pydantic Settings for .env management
 └── logs/                 # Persistent app logs (SUCCESS level)
+└── static/               # Static folder to handle uploads
+│   └── uploads/          # Uploads folder to manage images
 </code></pre>
 
 <h2>Contact</h2>
