@@ -29,6 +29,7 @@ dependencies = [
     "markupsafe==3.0.3",
     "mysql-connector-python==8.0.33",
     "passlib==1.7.4",
+    "pillow>=12.2.0",
     "protobuf==3.20.3",
     "pydantic==2.12.5",
     "pydantic-core==2.41.5",

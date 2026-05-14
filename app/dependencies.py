@@ -5,6 +5,7 @@ from .database import get_db
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.security import OAuth2PasswordBearer
+from pathlib import Path
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
@@ -23,3 +24,4 @@ DirID = Annotated[int, Field(description="whether blog is liked or not", ge=0, l
 FullName = Annotated[str, Field(pattern=r"^[a-zA-Z]+\s+[a-zA-Z]+$", description="Firstname and Lastname")]
 PASSWORD = Annotated[str, Field(min_length=8, description="Set password with at least 8 characters")]
 file=Annotated[UploadFile,File(description="File to upload pfp")]
+file_path=Annotated[Path,"This is path of the file"]

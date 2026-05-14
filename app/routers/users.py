@@ -1,6 +1,6 @@
-from .. import schemas, models,oauth2
+from .. import schemas, models, oauth2
 from fastapi import status, HTTPException, APIRouter,Request,UploadFile,Depends
-from ..utils import pass_hashing
+from ..utils import pass_hashing,process_img
 from .. import dependencies as deps
 from loguru import logger
 from sqlalchemy import select
@@ -9,6 +9,7 @@ from pathlib import Path
 from ..config import settings
 from uuid import uuid4
 import shutil
+from fastapi.concurrency import run_in_threadpool
 
 router = APIRouter(
     prefix="/users",
@@ -22,6 +23,7 @@ MAX_SIZE=settings.MAX_FILE_UPLOAD_SIZE
 
 def checkSize(file:deps.file):
     if file.size>MAX_SIZE:
+        logger.warning(f"File size {file.size} is greater than maximum size {MAX_SIZE}")
         raise HTTPException(status_code=status.HTTP_413_CONTENT_TOO_LARGE,detail=f"File is too large. Max allowed={MAX_SIZE}")
     return file
 
@@ -63,16 +65,23 @@ async def profile_photo(request:Request, current_user:oauth2.CurrentUser, db:dep
     file_path=Upload_path / unique_name 
     with open(file_path,"wb") as buffer:
         shutil.copyfileobj(file.file,buffer)
-
+    try:
+        await run_in_threadpool(process_img,file_path)
+        logger.success("Checking the img")
+    except Exception as e:
+        logger.error(f"Not a real img: {e}")
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,detail="That's not a real image")
+        
     img_url=f"/static/uploads/{unique_name}"
     query=await db.execute(select(models.User).where(models.User.id==current_user.id))
     user=query.scalars().first()
     if not user:
+        logger.warning("User not found, might be deleted or banned")
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="Not Found")
     
     user.profile_pic=img_url
     await db.commit()
     await db.refresh(user) #By this the user variable be always be updated
-
+    logger.success("Image is saved and profile_pic updated.")
     return {"message": "Profile picture updated", "url": img_url}
     
